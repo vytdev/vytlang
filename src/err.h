@@ -18,6 +18,6 @@ extern Verrcode verrno;
 void vseterrno(Verrcode err);
 
 // print the error message
-void vperror();
+void vperror(void);
 
 #endif // __VYTLANG_ERR_H

@@ -8,7 +8,7 @@ void vseterrno(Verrcode err) {
 	verrno = err;
 }
 
-void vperror() {
+void vperror(void) {
 	switch (verrno) {
 		// generic
 		case vEMPTY: break; // just do nothing
