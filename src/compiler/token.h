@@ -13,6 +13,15 @@ typedef enum {
 
 typedef enum {
 	TOKEN_CLASS_INT,
+	// brackets
+	TOKEN_CLASS_OP_SQUARE,   // [
+	TOKEN_CLASS_CL_SQUARE,   // ]
+	TOKEN_CLASS_OP_PAREN ,   // (
+	TOKEN_CLASS_CL_PAREN ,   // )
+	TOKEN_CLASS_OP_ANGLED,   // <
+	TOKEN_CLASS_CL_ANGLED,   // >
+	TOKEN_CLASS_OP_CURLY ,   // {
+	TOKEN_CLASS_CL_CURLY ,   // }
 	// operators
 	TOKEN_CLASS_DOT,         // .
 	TOKEN_CLASS_COMMA,       // ,

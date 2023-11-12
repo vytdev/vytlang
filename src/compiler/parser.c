@@ -137,8 +137,53 @@ void tokenize(char* text, TokenList* list) {
 
 			// add this token
 			TokenList_addToken(list, tok);
+			// problem adding token
+			if (verrno != 0) return;
 
 			// re-iterate for next token
+			continue;
+		}
+
+		// brackets
+		if (ch == '[' || ch == ']' || ch == '(' || ch == ')' ||
+			ch == '<' || ch == '>' || ch == '{' || ch == '}')
+		{
+			Token tok;
+			tok.line = line;
+			tok.col = col;
+			tok.pos = pos;
+			tok.type = TOKEN_TYPE_BRACKET;
+
+			tok.text = (char*) malloc(sizeof(char) * 2);
+
+			// allocation failed
+			if (!tok.text) {
+				vseterrno(vENOMEM);
+				return;
+			}
+
+			tok.text[0] = ch;
+			tok.text[1] = '\0';
+
+			// set token class
+			switch (ch) {
+				case '[': tok.name = TOKEN_CLASS_OP_SQUARE; break;
+				case ']': tok.name = TOKEN_CLASS_CL_SQUARE; break;
+				case '(': tok.name = TOKEN_CLASS_OP_PAREN ; break;
+				case ')': tok.name = TOKEN_CLASS_CL_PAREN ; break;
+				case '<': tok.name = TOKEN_CLASS_OP_ANGLED; break;
+				case '>': tok.name = TOKEN_CLASS_CL_ANGLED; break;
+				case '{': tok.name = TOKEN_CLASS_OP_CURLY ; break;
+				case '}': tok.name = TOKEN_CLASS_CL_CURLY ; break;
+			}
+
+			// add this token
+			TokenList_addToken(list, tok);
+			// problem adding token
+			if (verrno != 0) return;
+
+			col++;
+			pos++;
 			continue;
 		}
 
@@ -317,8 +362,11 @@ void tokenize(char* text, TokenList* list) {
 			tok.text[0] = lex[0];
 			tok.text[2] = '\0';
 			tok.text[1] = lex[1];
+
 			// put this to token list
 			TokenList_addToken(list, tok);
+			// problem adding token
+			if (verrno != 0) return;
 
 			col++;
 			pos++;
