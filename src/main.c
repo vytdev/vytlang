@@ -1,7 +1,7 @@
 #include "util.h"
 #include "err.h"
-#include "lexer/parser.h"
-#include "lexer/token.h"
+#include "compiler/parser.h"
+#include "compiler/token.h"
 #include <stdio.h>
 #include <stdlib.h>
 

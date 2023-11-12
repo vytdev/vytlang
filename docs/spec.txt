@@ -128,6 +128,26 @@ postfix decrement operator
     decrement a number by 1 and return the value before decrement
         a--
 
+less than operator
+    check whether a is less than b
+        a < b
+
+greater than operator
+    check whether a is greater than b
+        a > b
+
+less than or equal operator
+    check whether a is less than or equal to b
+        a <= b
+
+greater than or equal operator
+    check whether a is greater than or equal to b
+        a >= b
+
+equal to operator
+    check whether a is equal to b
+        a == b
+
 AND logical operator
     returns whether sub-node a and sub-node b are both 'true' values
         a && b
