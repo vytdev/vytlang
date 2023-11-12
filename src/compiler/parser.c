@@ -91,6 +91,106 @@ void tokenize(char* text, TokenList* list) {
 			continue;
 		}
 
+		// a possible identifier or keyword
+		if (isalpha(ch)) {
+			Token tok;
+			tok.line = line;
+			tok.col = col;
+			tok.pos = pos;
+			tok.type = TOKEN_TYPE_IDENTIFIER;
+			tok.name = TOKEN_CLASS_IDENTIFIER;
+
+			char* lex = (char*) malloc(sizeof(char) * 2);
+
+			// malloc failed
+			if (!lex) {
+				vseterrno(vENOMEM);
+				return;
+			}
+
+			size_t bufferSize = 2;
+			size_t idx = 0;
+
+			while (isalpha(text[pos]) || isdigit(text[pos])) {
+				if (bufferSize <= idx) {
+					bufferSize *= 2;
+					char* tmp = (char*) realloc(lex, sizeof(char*) * bufferSize);
+
+					// out of memory upon realloc
+					if (!tmp) {
+						free(lex);
+						vseterrno(vENOMEM);
+						return;
+					}
+
+					lex = tmp;
+				}
+
+				lex[idx++] = text[pos++];
+				parser_increment(text[pos - 1], &line, &col);
+
+				// were on the end
+				if (pos >= len) break;
+			}
+
+			// nul-terminate the string
+			lex[idx] = '\0';
+			// set the text
+			tok.text = lex;
+
+			// check for keyword
+			bool isKwd = false;
+			if      (strcmp(lex, "if") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KIF; }
+			else if (strcmp(lex, "else") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KELSE; }
+			else if (strcmp(lex, "try") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KTRY; }
+			else if (strcmp(lex, "catch") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KCATCH; }
+			else if (strcmp(lex, "finally") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KFINALLY; }
+			else if (strcmp(lex, "switch") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KSWITCH; }
+			else if (strcmp(lex, "case") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KCASE; }
+			else if (strcmp(lex, "with") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KWITH; }
+			else if (strcmp(lex, "do") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KDO; }
+			else if (strcmp(lex, "while") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KWHILE; }
+			else if (strcmp(lex, "for") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KFOR; }
+			else if (strcmp(lex, "break") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KBREAK; }
+			else if (strcmp(lex, "continue") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KCONTINUE; }
+			else if (strcmp(lex, "delete") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KDELETE; }
+			else if (strcmp(lex, "new") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KNEW; }
+			else if (strcmp(lex, "using") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KUSING; }
+			else if (strcmp(lex, "import") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KIMPORT; }
+			else if (strcmp(lex, "export") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KEXPORT; }
+			else if (strcmp(lex, "expose") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KEXPOSE; }
+			else if (strcmp(lex, "var") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KVAR; }
+			else if (strcmp(lex, "namespace") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KNAMESPACE; }
+			else if (strcmp(lex, "function") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KFUNCTION; }
+			else if (strcmp(lex, "throw") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KTHROW; }
+			else if (strcmp(lex, "return") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KRETURN; }
+			else if (strcmp(lex, "class") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KCLASS; }
+			else if (strcmp(lex, "extends") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KEXTENDS; }
+			else if (strcmp(lex, "implements") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KIMPLEMENTS; }
+			else if (strcmp(lex, "public") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KPUBLIC; }
+			else if (strcmp(lex, "private") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KPRIVATE; }
+			else if (strcmp(lex, "protected") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KPROTECTED; }
+			else if (strcmp(lex, "static") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KSTATIC; }
+			else if (strcmp(lex, "dynamic") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KDYNAMIC; }
+			else if (strcmp(lex, "abstract") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KABSTRACT; }
+			else if (strcmp(lex, "override") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KOVERRIDE; }
+			else if (strcmp(lex, "enum") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KENUM; }
+			else if (strcmp(lex, "interface") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KINTERFACE; }
+			else if (strcmp(lex, "type") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KTYPE; }
+			else if (strcmp(lex, "keyof") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KKEYOF; }
+			else if (strcmp(lex, "const") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KCONST; }
+			else if (strcmp(lex, "template") == 0) { isKwd = true; tok.name = TOKEN_CLASS_KTEMPLATE; }
+			if (isKwd) tok.type = TOKEN_TYPE_KEYWORD;
+
+			// add this token
+			TokenList_addToken(list, tok);
+			// problem adding token
+			if (verrno != 0) return;
+
+			// re-iterate for next token
+			continue;
+		}
+
 		// numbers
 		if (isdigit(ch)) {
 			Token tok;
@@ -371,6 +471,36 @@ void tokenize(char* text, TokenList* list) {
 
 			col++;
 			pos++;
+			continue;
+		}
+
+		// separator
+		if (ch == ';') {
+			Token tok;
+			tok.line = line;
+			tok.col = col;
+			tok.pos = pos;
+			tok.type = TOKEN_TYPE_SEPARATOR;
+			// TokenList_destroy requires heap not stack
+			tok.text = (char*) malloc(sizeof(char) * 2);
+
+			// allocation failed!
+			if (!tok.text) {
+				vseterrno(vENOMEM);
+				return;
+			}
+
+			// the text
+			tok.text[0] = ch;
+			tok.text[1] = '\0';
+
+			// try to put this token on token list
+			TokenList_addToken(list, tok);
+			// problem adding token
+			if (verrno != 0) return;
+
+			pos++;
+			col++;
 			continue;
 		}
 

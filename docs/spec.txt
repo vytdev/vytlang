@@ -350,6 +350,11 @@ function call
     the way to call functions
         myFunct(arg1, arg2, kwdParam=arg3);
 
+function return and throw
+    throw or return values from function
+        throw a;
+        return a;
+
 class declaration
     declares classes, with name (a), optional derivation from base class (b), implementing
     interface optionally (c), and the content (d)
@@ -444,6 +449,17 @@ III. Tokenization
 =================
 
 Token types: keyword, identifier, literal, operator, bracket, separator, comment
+
+Keywords:
+
+if, else, try, catch, finally, switch, case, with, do, while, for, break, continue, delete, new,
+using, import, export, expose, var, namespace, function, throw, return, class, extends, implements,
+public, private, protected, static, dynamic, abstract, override, enum, interface, type, keyof,
+const, template
+
+Built-ins:
+
+true, false
 
 IV. Process
 ===========
