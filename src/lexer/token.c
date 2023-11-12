@@ -1,8 +1,16 @@
 #include "token.h"
+#include "../err.h"
 #include <stdlib.h>
 
 void TokenList_create(TokenList* list) {
 	list->data = (Token*) malloc(sizeof(Token) * 2);
+
+	// malloc failed
+	if (!list->data) {
+		vseterrno(vENOMEM);
+		return;
+	}
+
 	list->__buffer = 2;
 	list->length = 0;
 }
@@ -12,7 +20,12 @@ void TokenList_addToken(TokenList* list, Token tok) {
 	if (list->__buffer <= list->length) {
 		list->__buffer *= 2;
 		list->data = (Token*) realloc(list->data, sizeof(Token) * list->__buffer);
-		if (!list->data) return;
+
+		// realloc failed
+		if (!list->data) {
+			vseterrno(vENOMEM);
+			return;
+		}
 	}
 
 	// add the token

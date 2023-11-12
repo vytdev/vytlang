@@ -11,6 +11,10 @@ typedef enum {
 	TOKEN_TYPE_LITERAL,
 } TokenType;
 
+typedef enum {
+	TOKEN_CLASS_INT,
+} TokenClass;
+
 // a token
 typedef struct {
 	// tracking info
@@ -19,6 +23,8 @@ typedef struct {
 	size_t pos;
 	// type of token
 	TokenType type;
+	// class of token
+	TokenClass name;
 	// the token text
 	char* text;
 } Token;

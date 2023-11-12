@@ -24,8 +24,8 @@ int main(int argc, char** argv) {
 	TokenList_create(&list);
 
 	// token list not created
-	if (!list.data) {
-		fprintf(stderr, "vyt: failed to allocate memory\n");
+	if (verrno != 0) {
+		vperror();
 		return 1;
 	}
 

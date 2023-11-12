@@ -20,16 +20,6 @@ void tokenize(char* text, TokenList* list) {
 	size_t pos = 0;
 	size_t len = strlen(text);
 
-	// lexeme
-	char* lex;
-	// buffer size
-	size_t lexBufSize = 2;
-	// current length of lex
-	size_t lexLen = 0;
-
-	// the token we'll store
-	Token tok;
-
 	while (pos < len) {
 		char ch = text[pos];
 
@@ -92,7 +82,7 @@ void tokenize(char* text, TokenList* list) {
 			pos += 2;
 			col += 2;
 
-			// this comment is in the end of the source text, like what we
+			// this comment is in the end of the source text, and like what we
 			// done for single line comments, let's end the process
 			if (pos >= len) break;
 
@@ -100,14 +90,55 @@ void tokenize(char* text, TokenList* list) {
 			continue;
 		}
 
+		// numbers
+		if (isdigit(ch)) {
+			Token tok;
+			tok.line = line;
+			tok.col = col;
+			tok.pos = pos;
+			tok.type = TOKEN_TYPE_LITERAL;
+			tok.name = TOKEN_CLASS_INT;
+
+			char* lex = (char*) malloc(sizeof(char) * 2);
+			size_t bufferSize = 2;
+			size_t idx = 0;
+
+			while (isdigit(text[pos])) {
+				if (bufferSize <= idx) {
+					bufferSize *= 2;
+					lex = (char*) realloc(lex, sizeof(char*) * bufferSize);
+				}
+
+				lex[idx++] = text[pos++];
+				parser_increment(text[pos - 1], &line, &col);
+
+				// were on the end
+				if (pos >= len) break;
+			}
+
+			// nul-terminate the string
+			lex[idx] = '\0';
+			// set the text
+			tok.text = lex;
+
+			// add this token
+			TokenList_addToken(list, tok);
+
+			// re-iterate for next token
+			continue;
+		}
+
 		// TODO: complete this part
-#ifdef __DEBUG
-		printf("%c: %d %d\n", ch, line, col);
-#endif // __DEBUG
 
 		parser_increment(ch, &line, &col);
 		pos++;
 	}
+
+#ifdef __DEBUG
+	for (int i = 0; i < list->length; i++) {
+		printf("%s: %d %d\n", list->data[i].text, list->data[i].line, list->data[i].col);
+	}
+#endif // __DEBUG
 
 }
 
