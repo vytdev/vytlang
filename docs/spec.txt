@@ -1,0 +1,568 @@
+VYT Language Specification
+Version: 0.1.0
+Revised: November 12, 2023
+Copyright (c) 2023 VYT <https://vytdev.github.io>
+
+
+I. Introduction
+===============
+
+VYT Lang is a custom programming language styled and made to be a high level one. It is written
+in the C language, and it offers both high and low level features.
+
+
+II. Syntax
+==========
+
+expression
+    an expression contains several sub-nodes that can be written in one line ;
+    the base node of all node
+
+block
+    a block node contains a list of nodes ordered to be executed
+        { ...; }
+
+group
+    an expression separator to contain the highest precedence
+        ( ... )
+
+identifier
+    a leaf node to reference a variable created at symbol table
+        a
+
+pointers
+    dereference operator
+        *a
+    a pointer to a value
+        *a = ...
+
+references
+    extract memory address
+        &a
+    assign value to the pointer
+        &a = ...
+
+dot notation operator
+    get values from properties
+        a.b
+        a.b.c
+
+subscript operator
+    get values from properties with name type other than string
+        a[b]
+        a[b][c]
+
+scope getter operator
+    get symbols (b) from a scope (a), particularly namespaces
+        a::b
+
+pointer getter operator
+    get symbols (b) from a pointer (a)
+        a->b
+
+comma separator
+    separates items, limited to some declarations
+        a , b , c , ...
+
+add operator
+    add two sub-nodes (a and b) and return the result to parent node
+        a + b
+
+subtract operator
+    subtract two sub-nodes (a and b) and return the result to parent node
+        a - b
+
+multiply operator
+    multiply two sub-nodes (a and b) and return the result to parent node
+        a * b
+
+divide operator
+    divide two sub-nodes (a and b) and return the result to parent node
+        a / b
+
+exponent operator
+    raise sub-node a to the power of sub-node b
+        a ** b
+
+modulo operator
+    get the remainder of a over b
+        a % b
+
+AND bitwise operator
+    toggle bits as masked to the two sub-nodes
+        a & b
+
+OR bitwise operator
+    toggle bits as mixed to the two sub-nodes
+        a | b
+
+XOR bitwise operator
+    exclusive OR the two sub-nodes
+        a ^ b
+
+NOT bitwise operator
+    reverse toggle bits of sub-node
+        ~a
+
+shift left operator
+    shift bits of sub-node a by sub-node b times to the left
+        a << b
+
+shift right operator
+    shift bits of sub-bode a by sub-node b times to the right
+        a >> b
+
+prefix increment operator
+    increment a number by 1 and return the value after increment
+        ++a
+
+postfix increment operator
+    increment a number by 1 and return the value before increment
+        a++
+
+prefix decrement operator
+    decrement a number by 1 and return the value after decrement
+        --a
+
+postfix decrement operator
+    decrement a number by 1 and return the value before decrement
+        a--
+
+AND logical operator
+    returns whether sub-node a and sub-node b are both 'true' values
+        a && b
+
+OR logical operator
+    returns whether one or both of sub-node a and sub-node b are 'true' value
+        a || b
+
+NOT logical operator
+    reverse the boolean value of sub-node a
+        !a
+
+assignment operator
+    assigns value to reference a from expression b
+        a = b
+
+decoration operator
+    for typicall metaprogramming, we have decorators! it contains reference name (a), and input
+    arguments (b)
+        @a(b);
+
+literals
+    can be a number, string, boolean, object, or array literal
+        15
+        15.0
+        1.5
+        0.15
+        "text string"
+        true
+        false
+        { a: b, c: d }
+        [ a, b, c, d ]
+
+if statement
+    evaluate the containing expression (b) if the group expression (a) results true
+        if (a) b;
+
+else statement
+    execute containing expression (b) if last part didn't succeded
+        else b;
+
+try statement
+    attempts to evaluate code block (a) and stop once there were thrown error
+        try a;
+
+catch statement
+    run a block (a) ti handle catched exception got from executing the previous try statement
+        catch a;
+
+finally statement
+    run a code block (a) after a try statement is executed, with or without any exceptions
+        finally a;
+
+switch statement
+    switch through values, use when you have a lot of if..else matching for a single value (a)
+        switch (a) { b };
+    stopped by 'break'
+
+case statement
+    a condition object (a) to attempt to match with the switch statement
+        case (a): ...;
+
+with statement
+    work with a class (a), with named handle (b), then delete it immediately
+        with (a) b { ...; }
+
+pre-processor statement
+    we support pre-processing as for metaprogramming!
+        #directive parameters ...
+    different directives:
+        #if condition
+        #ifdef condition
+        #ifndef condition
+        #elif condition
+        #else
+        #define property [value]
+        #undef property
+        #pragma pairs
+
+do block
+    evaluate the containing expression (a) anyway
+        do a;
+
+while loop
+    run a code block (b) repeatedly until the condition (a) evaluate to false
+        while (a) b;
+
+for loop
+    iterate through an array like object (b) and execute code block (c) per each iteration, while
+    storing the value of current operand (a) to an already declared variable to be accesible by
+    the code block
+        for (a in b) c;
+
+break keyword
+    terminates a loop, with, or a switch statement, or escape evaluation of with statement
+        break;
+
+continue keyword
+    terminates a loop iteration and go to next
+        continue;
+
+delete keyword
+    delete a variable (a) or reference within an object, by its symbol identifier
+        delete a
+
+new keyword
+    create a new heap object by given class
+        new ClassName();
+
+using keyword
+    exposes a namespace scope values to current scope
+        using namespaceName;
+
+import keyword
+    import symbols from modules
+        import "path/to/module.vyt"
+        import ( a, b as c ) "path/to/module.vyt";
+        import ( * ) "path/to/module.vyt";
+        import ( * as a ) "path/to/module.vyt";
+
+export keyword
+    export symbols from modules
+        export ...;
+    like for example:
+        export var myVar typeName = value;
+        export ( myVar );
+    or from other modules:
+        export "path/to/module.vyt"
+        export ( a, b as c ) "path/to/module.vyt";
+        export ( * ) "path/to/module.vyt";
+        export ( * as a ) "path/to/module.vyt";
+
+expose keyword
+    expose symbols, works like export, but made specifically for within namespaces
+        expose ...;
+    like:
+        expose var myVar typeName = value;
+        expose ( myVar );
+
+variable name
+    this can be an identifier, reference, or destruction operation
+        a
+        a.a
+        a[a]
+        [ a, a, ... ]
+        { a, b, ... }
+
+variable declaration
+    declares a new variable with name (a), type name (b), and value (c)
+        var a b = c;
+    you can do type inference
+        var a = c;
+    you can also do make without value
+        var a b;
+    you can declare only variable name, subsequent assignment operation will be used for type
+    inference
+        var a;
+
+namespace declaration
+    creates a new isolated named scope, with only name (a) and the block (b)
+        namespace a { b };
+
+function declaration
+    creates a new function declaration by identifier (a) and its arguments (b), that can execute
+    code block (c)
+        function a(b) c;
+    you can have no identifier to make a lambda function
+        function (b) c;
+    you can also have no code block to only make a declaration
+        function a(b);
+    the declaration will be created on current scope, the definition (c; the code block) will
+    be returned to parent expression, and is also plugged with the function declaration
+    * we support function overloading
+
+function arguments declaration
+    defines variables for a function declaration, containing list of function parameters (a)
+        a, a, ...
+    support rest parameters (a real elipsis is put there)
+        name type ...
+
+function parameter
+    structure of a function parameter, contains the variable name to use (a), the type name (b),
+    ad default value (c)
+        a b = c
+    you can have no type name, so it will do implicitly identify it based on your usage to the
+    variable (this sometimes fail)
+        a = c
+    you can have no default value, so the function will be marked as required one
+        a b
+    you can have no both type name and default value!
+        a
+
+function return and throw type
+    how to declare return and thrown type
+        function ...(...) c :: d { ... }
+    c - the return type
+    d - thrown type
+
+function call
+    the way to call functions
+        myFunct(arg1, arg2, kwdParam=arg3);
+
+class declaration
+    declares classes, with name (a), optional derivation from base class (b), implementing
+    interface optionally (c), and the content (d)
+        class a { d }
+        class a extends b { d }
+        class a implements c { d }
+        class a extends b implements c { d }
+
+class content
+    classes contains properties and methods, containing the accessor (a), scope (b), and the
+    declaration itself (c)
+        a         b        c
+        public    ...      ...
+        private   ...      ...
+        protected ...      ...
+        ...       static   ...
+        ...       dynamic  ...
+        ...       ...      c
+    some additions
+        a b abstract c
+        a b override c
+    c can be a variable, class, namespace, enum, interface, type, or function declaration
+
+enum declaration
+    create enumerations, with name (a), and the contents (b)
+        enum a { b, b, ... };
+
+enum contents
+    contents of enums, with name (a), type (b), and the constant (c)
+        a b = c
+    when no constant, order number is used
+        a b
+    when no type, do type inference
+        a = c
+    when have both no type and value, just order number
+        a
+
+interface declaration
+    create interfaces, with name (a), optional extensions (b), and contents (c)
+        interface a { c };
+        interface a extends b { c };
+
+interface contents
+    contents of interfaces
+        key: type
+
+type declaration
+    create types with name (a), containing signature (b)
+        type a = b
+
+type casting
+    cast type of value (b) into a new type (a)
+        <a> b
+
+union type
+    union type joiner
+        a | b
+
+intersection type
+    intersection type joiner
+        a & b
+
+keyof type operator
+    keyof returns list of containing property and method names from the type signature (a)
+        keyof a
+
+const type keyword
+    constant type value, any assignment reference will throw type error
+        const a
+
+template declaration
+    create a type generic template with list of generic type parameters (a)
+        template <a> ...
+    supported with declarations: classes, functions, types, interfaces
+
+template instantiation
+    instantiate a template with actual types
+        template <type1, type2, ...>
+
+template constraints
+    constrain type generic parameters with specific types or interfaces
+        template <b extends SomeInterfaceOrType> ...
+
+tamplate parameters default values
+    set default type for handle in template
+        template <b = defaultType>
+    you can still do constraints
+        template <b extends SomeInterface = defaultType>
+
+
+III. Tokenization
+=================
+
+Token types: keyword, identifier, literal, operator, bracket, separator, comment
+
+IV. Process
+===========
+
+The process is divided into 2 main parts: compilation and runtime
+
+In compilation, we do:
+1. pre-process text
+2. tokenize the text (ignore comments)
+3. syntax check
+4. create ast (abstract syntax tree)
+5. create symbol table from ast while type checking at the same time
+6. convert into ir (intermidiate representation)
+
+Saving and loading compile data:
+we save it in format we call bytecode, it has a structure like elf (executable and linkable format)
+binaries: we have sections and corresponding data included in those sections:
+- data - store literal
+- text - store instruction sets
+
+In runtime, we do:
+1. get the ir
+2. start the runtime environment
+3. load the ir to runtime
+4. run the runtime and execute the instructions in their order
+5. if we get into the end of instructions, perform cleanup for rest
+   heap objects to ensure there were no memory leaks will happen
+6. then stop the runtime
+
+Our bytecode has instruction format, stores 1 instruction per 8 byte
+
+op code      8 bits (1 byte)
+param 1      28 bits (first 3.5 byte)
+param 2      28 bits (second 3.5 byte)
+
+for a total of 64 bits (8 byte)
+
+We only work 2 parameters per instruction, and we have a lot of 256 different op code.
+We have a wide range of memory storage for data section and for other temporary variables
+for our registries and possible stacks with a range of 268435456 (2^28) different addresses.
+
+We also have our dedicated assembly. Here's overall syntax:
+
+
+<section>
+    defines a new known section on the current asm script
+
+label:
+    label parts of instruction sets from <text> section
+
+; comments
+    same comment style as traditional assembly
+
+0x1, 0x2, var_name, and so on
+    registry or literal id
+
+
+Some of our instructions:
+
+load
+    load a variable (literal id) to memory (a registry)
+        <data>
+        var_name int 123 ; define var_name literal with type int
+        <text>
+        load 0x1 var_name ; load var_name to our runtime registry
+
+free
+    free the registry, for possible heap usage (we normally work only with stacks)
+        free 0x1 ; frees registry 0x1
+
+mov
+    move value from a registry to another
+        mov 0x2 0x1 ; move 0x1 value to 0x2, and 0x1 will be freed after
+
+cpy
+    copy the value of a registry into another
+        cpy 0x2 0x1 ; copy value of 0x1 to 0x2
+        ; now registry 0x1 and 0x2 share the same value!
+
+add
+    add a (a reg) and b (another reg) and store the result to a registry a
+        <data>
+        num1 int 1
+        num2 int 2
+        <text>
+        load 0x1 int1 ; load int1 to registry 0x1
+        load 0x2 int2 ; load int2 to registry 0x2
+        add 0x1 0x2 ; add int1 (stored on reg 0x1) and int2 (stored on reg 0x2)
+        free 0x2 ; lets remove 0x2 from our registry
+        ; now we have number 3 (1 + 2) at registry 0x1
+
+sub
+    subtract a (a reg) and b (another reg) and store the result to a registry a
+        <data>
+        num1 int 3
+        num2 int 2
+        <text>
+        load 0x1 int1 ; load int1 to registry 0x1
+        load 0x2 int2 ; load int2 to registry 0x2
+        sub 0x1 0x2 ; sub int1 (stored on reg 0x1) and int2 (stored on reg 0x2)
+        free 0x2 ; lets remove 0x2 from our registry
+        ; now we have number 1 (3 - 2) at registry 0x1
+ 
+mul
+    multiply a (a reg) and b (another reg) and store the result to a registry a
+        <data>
+        num1 int 3
+        num2 int 2
+        <text>
+        load 0x1 int1 ; load int1 to registry 0x1
+        load 0x2 int2 ; load int2 to registry 0x2
+        mul 0x1 0x2 ; mul int1 (stored on reg 0x1) and int2 (stored on reg 0x2)
+        free 0x2 ; lets remove 0x2 from our registry
+        ; now we have number 6 (3 * 2) at registry 0x1
+
+div
+    divide a (a reg) and b (another reg) and store the result to a registry a
+        <data>
+        num1 int 20
+        num2 int 5
+        <text>
+        load 0x1 int1 ; load int1 to registry 0x1
+        load 0x2 int2 ; load int2 to registry 0x2
+        div 0x1 0x2 ; div int1 (stored on reg 0x1) and int2 (stored on reg 0x2)
+        free 0x2 ; lets remove 0x2 from our registry
+        ; now we have number 4 (20 / 5) at registry 0x1
+
+mod
+    get remainder (modulo) of a (a reg) and b (another reg) and store the result to a registry a
+        <data>
+        num1 int 10
+        num2 int 4
+        <text>
+        load 0x1 int1 ; load int1 to registry 0x1
+        load 0x2 int2 ; load int2 to registry 0x2
+        mod 0x1 0x2 ; mod int1 (stored on reg 0x1) and int2 (stored on reg 0x2)
+        free 0x2 ; lets remove 0x2 from our registry
+        ; now we have number 2 (10 % 4) at registry 0x1
+
+There are more! Here are just some of them, Our dedicated custom assembly is made to work at
+the most of its low level abstractions without being object oriented. Our compiler will handle
+our high level language constructs to convert it into our assembly and execute by the runtime.
