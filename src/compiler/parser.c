@@ -359,9 +359,7 @@ void tokenize(char* text, TokenList* list) {
 				return;
 			}
 
-			tok.text[0] = lex[0];
-			tok.text[2] = '\0';
-			tok.text[1] = lex[1];
+			strcpy((char*) tok.text, lex);
 
 			// put this to token list
 			TokenList_addToken(list, tok);
