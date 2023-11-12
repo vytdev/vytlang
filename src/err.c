@@ -36,6 +36,7 @@ void vperror(void) {
 		case vEMPTY: break; // just do nothing
 		case vENOMEM: fprintf(stderr, "insufficient memory"); break;
 		case vENOENT: fprintf(stderr, "no such file or directory"); break;
+		case vEREAD: fprintf(stderr, "read error"); break;
 		// parser specific
 		case vEPUCMT: fprintf(stderr, "parser: unterminated comment"); break;
 	}

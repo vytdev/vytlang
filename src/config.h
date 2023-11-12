@@ -1,5 +1,5 @@
-#ifndef __VYTLANG_META_H
-#define __VYTLANG_META_H
+#ifndef __VYTLANG_CONFIG_H
+#define __VYTLANG_CONFIG_H
 
 // info about this language
 
@@ -8,4 +8,7 @@
 // release number of vytlang
 #define VYL_BUILD 1
 
-#endif // __VYTLANG_META_H
+// other constants
+#define BUFFER_SIZE 4096
+
+#endif // __VYTLANG_CONFIG_H

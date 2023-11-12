@@ -19,13 +19,16 @@ void TokenList_addToken(TokenList* list, Token tok) {
 	// were getting no space
 	if (list->__buffer <= list->length) {
 		list->__buffer *= 2;
-		list->data = (Token*) realloc(list->data, sizeof(Token) * list->__buffer);
+		Token* tmp = (Token*) realloc(list->data, sizeof(Token) * list->__buffer);
 
 		// realloc failed
-		if (!list->data) {
+		if (!tmp) {
+			free(list->data);
 			vseterrno(vENOMEM);
 			return;
 		}
+
+		list->data = tmp;
 	}
 
 	// add the token

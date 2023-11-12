@@ -114,13 +114,16 @@ void tokenize(char* text, TokenList* list) {
 			while (isdigit(text[pos])) {
 				if (bufferSize <= idx) {
 					bufferSize *= 2;
-					lex = (char*) realloc(lex, sizeof(char*) * bufferSize);
+					char* tmp = (char*) realloc(lex, sizeof(char*) * bufferSize);
 
 					// out of memory upon realloc
-					if (!lex) {
+					if (!tmp) {
+						free(lex);
 						vseterrno(vENOMEM);
 						return;
 					}
+
+					lex = tmp;
 				}
 
 				lex[idx++] = text[pos++];

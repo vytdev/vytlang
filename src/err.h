@@ -7,6 +7,7 @@ typedef enum {
 	vEMPTY, // no error
 	vENOMEM, // insufficient memory
 	vENOENT, // no such file or directory
+	vEREAD, // read error
 	// parser specific
 	vEPUCMT, // unterminated comment
 } Verrcode;

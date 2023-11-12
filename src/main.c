@@ -1,5 +1,5 @@
 #include "main.h"
-#include "meta.h"
+#include "config.h"
 #include "util.h"
 #include "err.h"
 #include "compiler/parser.h"
@@ -66,11 +66,17 @@ int main(int argc, char** argv) {
 			continue;
 		}
 
+		// unknown option
+		if (arg[1] == arg[0]) {
+			fprintf(stderr, "vyt: unknown option %s\n", arg);
+			return 2;
+		}
+
 		// for short flags:
 		for (int j = 1; j < len; j++) switch (arg[j]) {
 			case 'h': TermOpts.showHelp = true; break;
 			case 'v': TermOpts.showVersion = true; break;
-			default: fprintf(stderr, "vyt: unknown flag -- %c\n", arg[j]); return 2;
+			default: fprintf(stderr, "vyt: unrecognized flag -- %c\n", arg[j]); return 2;
 		}
 	}
 
@@ -97,12 +103,23 @@ int main(int argc, char** argv) {
 
 	// the program run
 
-	if (TermOpts.argp == -1) {
-		fprintf(stderr, "vyt: please provide file\n");
-		return 1;
-	}
+	char* text;
 
-	char* text = util_readFile(argv[TermOpts.argp]);
+	if (TermOpts.readFromStdin) {
+		if (STDIN_TTY) {
+			fprintf(stderr, "vyt: repl: not implemented\n");
+			return 1;
+		}
+
+		text = util_readStdIn();
+	}
+	else {
+		if (TermOpts.argp == -1) {
+			fprintf(stderr, "vyt: please provide file\n");
+			return 1;
+		}
+		text = util_readFile(argv[TermOpts.argp]);
+	}
 
 	// an error happened after reading file
 	if (verrno != 0) {
@@ -131,6 +148,7 @@ int main(int argc, char** argv) {
 
 	// post cleanup
 	TokenList_destroy(&list);
+	free(text);
 
 	return 0;
 }
@@ -141,17 +159,17 @@ void showHelp(void) {
 		"    A custom programming language\n"
 		"    https://github.com/vytdev/vytlang\n"
 		"\n"
-		"usage: %s [options] [file | -] [args ...]\n"
+		"Usage: %s [options] [file | -] [args ...]\n"
 		"\n"
-		"options:\n"
-		"    -                      read from stdin (default; repl if tty)\n"
-		"        --                 end of vyl options\n"
-		"    -h, --help             show this help and exit\n"
-		"    -v, --version          show version name then exit\n"
+		"Options:\n"
+		"    -                      Read from stdin (default; repl if tty)\n"
+		"        --                 End of vyl options\n"
+		"    -h, --help             Show this help and exit\n"
+		"    -v, --version          Show version name then exit\n"
 		"\n"
-		"arguments:\n"
-		"    file                   file to read and process\n"
-		"    args                   args to pass to the program\n"
+		"Arguments:\n"
+		"    file                   File to read and process\n"
+		"    args                   Args to pass to the program\n"
 		"\n"
 		"Copyright (c) 2023, VYT. All rights reserved\n"
 		"This project is under the GNU General Public License v3\n"
