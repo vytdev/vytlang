@@ -7,6 +7,7 @@
 char* util_readFile(const char* path) {
 	FILE* file = fopen(path, "r");
 	if (!file) {
+		vseterrmsg(path);
 		vseterrno(vENOENT);
 		return NULL;
 	}

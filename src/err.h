@@ -13,9 +13,14 @@ typedef enum {
 
 // the constant
 extern Verrcode verrno;
+// additional message
+extern char* verrmsg;
 
 // set verrno to a specific error
 void vseterrno(Verrcode err);
+
+// set verrmsg additional message
+void vseterrmsg(const char* msg, ...);
 
 // print the error message
 void vperror(void);
