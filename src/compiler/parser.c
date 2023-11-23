@@ -1,6 +1,5 @@
 #include "parser.h"
 #include "token.h"
-#include "operators.h"
 #include "../err.h"
 #include <stdbool.h>
 #include <stddef.h>

@@ -70,7 +70,7 @@ typedef enum {
 	TOKEN_CLASS_DOT,         // .
 	TOKEN_CLASS_COMMA,       // ,
 	TOKEN_CLASS_COLON,       // :
-	TOKEN_CLASS_COLON_COLON, // :
+	TOKEN_CLASS_COLON_COLON, // ::
 	TOKEN_CLASS_PLUS,        // +
 	TOKEN_CLASS_PLUS_PLUS,   // ++
 	TOKEN_CLASS_MINUS,       // -

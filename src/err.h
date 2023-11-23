@@ -10,6 +10,7 @@ typedef enum {
 	vEREAD, // read error
 	// parser specific
 	vEPUCMT, // unterminated comment
+	vEPEND, // unexpected end of input
 } Verrcode;
 
 // the constant

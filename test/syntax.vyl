@@ -1,0 +1,13 @@
+hello, world!
+// this part will be ignored
+/* this part should also
+   be ignored */
+
+/*a number:*/ 123
+
+/*tokenization test*/
++++
+---
+***
+&&&
+|||

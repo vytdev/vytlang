@@ -39,6 +39,7 @@ void vperror(void) {
 		case vEREAD: fprintf(stderr, "read error"); break;
 		// parser specific
 		case vEPUCMT: fprintf(stderr, "parser: unterminated comment"); break;
+		case vEPEND: fprintf(stderr, "parser: unexpected end of input"); break;
 	}
 
 	// verrmsg is set
