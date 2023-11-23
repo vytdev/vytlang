@@ -299,7 +299,7 @@ And thats all! Here's some exanples:
         ; the fopen sys function id
         open dd 2     ; req args: 1
         ; the fclose sys function id
-        close dd 2    ; req args: 1
+        close dd 3    ; req args: 1
         ; the fwrite sys function id
         write dd 4    ; req args: 3
         ; the fflush function to immediately show changes into terminal
