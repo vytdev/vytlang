@@ -1,0 +1,352 @@
+VYT Language Runtime Specification
+Version: 0.1.0
+Revised: November 21, 2023
+Copyright (c) 2023 VYT <https://vytdev.github.io/>
+
+
+I. Introduction
+===============
+
+This is the documentation of the VYT Language Runtime Environment. We support
+soon another language dedicated for this high-level language, the VYT Language
+Assembly!
+
+VYL Assembly is made to be on its most low-level, so it is easier to follow the
+flow of your program.
+
+
+II. Format
+==========
+
+Bytecode has this format:
+
+    [signature]  [body ...]
+    6 bytes      the rest content
+
+Body contains a list of sections:
+
+    [section type]  [section span]  [section content]
+    1 byte          4 bytes         variable length
+
+".text" section contains this metadata:
+
+    [number of instructions]  [instruction list]
+    4 bytes                   the number of instructions times the size used per
+                              instruction
+
+Every instruction has:
+
+    [op code]  [param 1]             [param 2]
+    1 byte     3.5 bytes (28 bits)   3.5 bytes (28 bits)
+
+Our signature is:
+
+    56 59 54 58 ?? ??
+
+The additional 2 bytes are the format version of the bytecode. The first 4
+sequences correspond to the unique identifier: VYTX
+
+
+III. Memory management
+======================
+
+It operates on an isolated, shared, and pre-allocated memory over the runtime
+process. This runtime has a dedicated memory management unit ensuring better
+security when running your programs. Let's call this memory the virtual
+memory of our runtime. Here's how the memory is formatted:
+
+    [null]  [rest of memory ...]
+    1 byte  may vary
+
+The 0x0 corresponds to the NULL pointer. Please take note that the actual
+physical memory address of our virtual memory may vary, and the virtual memory
+acts like a dynamic memory page on the physical memory.
+
+Every allocation has metadata like this:
+
+    [allocation size]  [content]
+    4 bytes            variable length
+
+The allocation size defines the length of the actual data, necessary to
+determine the span size of the value, and is used for operations like 'mov' or
+'lod', and also to determine whether it is a byte, word, dword, or qword. It is
+also used for dynamic virtual heap management.
+
+Referencing (by loading or setting a value) to any part of memory that is either
+not initialized or points to an allocation size info results in a segmentation
+fault.
+
+Loading or setting the value of the memory at address 0x0 will always result in
+an error: null referencing.
+
+Accessing memory addresses that are out of bounds of the current allocated
+virtual memory will result in an error: out of bounds.
+
+Failed reallocation of the virtual memory will result in an error: out of
+memory.
+
+In this setup, we also experience the issue called "memory fragmentation" where
+the memory space is divided into small, non-contiguous blocks due to allocation
+and deallocation of memory over time. It can lead to inefficient use of memory
+as available memory exists in smaller, scattered chunks rather than in large
+contiguous blocks, which might not be usable for larger allocations despite
+having enough total free space.
+
+After the memory is completely initialized, the bytecode is directly loaded into
+it!
+
+
+IV. Registers
+==============
+
+Registers are an important part of the runtime. They allow you to work with
+specific values at a time, and they're the only way to interact with values,
+such as performing arithmetic or bitwise operations, like add, subtract,
+multiply, divide, modulo, exponentiation, bit and, or, xor, not, shifts, and
+many others. We have 7 different registers plus the additional 9:
+
+    r1 - r9, rax, rbx, rcx, rdx, rbp, rsp, rip
+
+If you've worked with ARM or x86-64 Assembly, you might be familiar with these,
+as this convention is inspired by the ARM and Intel way!
+
+r1 - r9
+    These are 9 different free registers you can use for anything.
+
+rax
+    It is an accumulator register, it's like a hotspot for performing most
+    operations.
+
+rbx
+    It is a base register, commonly used for pointers (I'm not entirely sure if
+    it is).
+
+rcx
+    This is a counter register, commonly used in loops or others.
+
+rdx
+    It is a data register, commonly used as an extension for the accumulator.
+
+rbp
+    It is the base pointer of the current stack frame.
+
+rsp
+    It is a pointer that points to the memory address of the current stack.
+
+rip
+    It represents the memory address of the next executed instruction.
+
+
+V. Instruction set
+==================
+
+We have a lot of different instructions:
+
+lod [register] [literal]
+    Loads a value (1) from stored literals (in .data section) into a register
+    (2).
+
+ldr [register] [register]
+    Loads at most 4 bytes from a value in memory at the address set in the
+    second register (2) into the first register (1).
+
+lda [register] [literal]
+    Load the memory address of the literal (stored in .data section) (2) into
+    the given register (1).
+
+del [register]
+    Free the virtual memory value at the given memory address set in register
+    (1).
+
+alc [register] [register]
+    Allocate virtual memory for the given size in bytes (2) and set the pointer
+    address into the register (1). It is set to NULL when failed.
+
+rlc [register] [register]
+    Acts like alc but allocates a new part of memory for a given size in bytes
+    (2) and sets the new pointer address into the register (1) for the old
+    address register (1).
+
+mov [register] [register]
+    Move register values from the second register (2) to the first one (1).
+
+cpy [register] [register]
+    Copy the value from the second register (2) into the first (1).
+
+str [register] [register]
+    Store the value of the second register (2) into the memory at the address
+    specified in the first register (1).
+
+psh [register]
+    Push a value from register (1) onto the stack.
+
+pop [register]
+    Pop a value from the stack and put it in register (1).
+
+sys [register]
+    Do a native function call, where the function ID is stored in register (1).
+
+cal [label]
+    Do a procedure subroutine call from the given procedure point (1).
+
+ret
+    Stop the procedure call.
+
+add [register] [register]
+    Arithmetic addition of the values from two registers (1) (2) and store the
+    result in the first register (1).
+
+sub [register] [register]
+    Same as 'add', but subtracts the values instead.
+
+mul [register] [register]
+    Also same as 'add', but multiplies the values.
+
+div [register] [register]
+    Same as 'add', but divides the values, first (1) over second (2) register
+    value.
+
+mod [register] [register]
+    Same as 'add', but gets the remainder of the values, first (1) modulo second
+    (2) register value.
+
+exp [register] [register]
+    Do exponentiation of two parameters, first param value (1) raised to the
+    power of the value of the second parameter (2), and store the result in the
+    first parameter.
+
+and [register] [register]
+    Do bitwise AND operation on two registers (1) (2) and store the result in
+    the first (1).
+
+ior [register] [register]
+    Just like 'and', but does bitwise OR (specifically inclusive-or).
+
+xor [register] [register]
+    Just like 'and', but does bitwise XOR (specifically exclusive-or).
+
+not [register]
+    Toggles all the bits in a register (1) and stores the result in itself (1).
+
+shl [register] [register]
+    Binary shift-left the digits in the first register value (1) n times given
+    by the second register (2), and store the result in the first register (1).
+
+shr [register] [register]
+    Same as 'shl', but binary shift-right.
+
+inc [register]
+    Increment value from a register (1).
+
+dec [register]
+    Decrement value from a register (1).
+
+cmp [register] [register]
+    Compare two different values from two registers (1) (2) in relation to
+    numbers and store the result into the first register (1).
+
+jlt [register] [label]
+    Jump to the given label (2) when the register (1) content from the result of
+    cmp is less than.
+
+jgt [register] [label]
+    Same as 'jlt', but when greater than.
+
+jeq [register] [label]
+    Same as 'jlt', but when two values are equal.
+
+jmp [label]
+    Trigger an unconditional jump to label (1).
+
+
+VI. Assembly syntax
+====================
+
+Comments - it is just inspired by the conventional semi-colon syntax for
+comments in assembly languages:
+    ; comments starts with semi-colon
+
+Sections - to declare sections, you must prefix it with a dot:
+    .text ; this declares the instructions section
+
+Literals - support to literals (specifically and only number literals):
+    12 3 45
+
+Labels - this is specific to the .text section:
+    label: instruction1 param1
+           instruction2 param2
+           jmp label ; you can use it for jumps!
+
+Instructions - to create instructions, use the following syntax:
+    instructionName param1 param2
+
+
+And thats all! Here's some exanples:
+
+    ; this code demonstrates a simple "Hello, world!" program written
+    ; on our dedicated assembly language
+    
+    .data
+        ; sequence of bytes equivalent to:   "Hello, world!\n"
+        txt db 72 101 108 108 111 44 32 119 111 114 108 100 33 10
+        ; the length of message
+        len dd 13
+        ; the file descriptor for stdout
+        stdout_fd db 1
+        ; the program exit code
+        exit_code db 0
+    
+        ; the fopen sys function id
+        open dd 2     ; req args: 1
+        ; the fclose sys function id
+        close dd 2    ; req args: 1
+        ; the fwrite sys function id
+        write dd 4    ; req args: 3
+        ; the fflush function to immediately show changes into terminal
+        flush dd 8    ; req args: 1
+        ; the exit sys function id
+        exit dd 20    ; req args: 1
+    
+    .text
+        ; open stdout connection
+        lod rax open      ; the sys call function
+        lod r1 stdout_fd  ; the file descriptor to open
+        ; just reinitialize stdout since it is always open in the actual
+        ; C program
+        sys rax
+    
+        ; load the sys call function id
+        lod rax write
+        ; no need to set stdout_fd again to r1
+        lda r2 txt        ; load the memory address of txt
+        lod r3 len        ; load the length of message
+        ; trigger a sys call to write
+        sys rax
+    
+        ; load the sys call function id for fflush
+        lod rax flush
+        ; no need to set stdout_fd again to r1
+        ; trigger fflush in C
+        sys rax
+    
+        ; load the sys call function id for fclose
+        lod rax close
+        ; no need to set stdout_fd again to r1
+        ; trigger a sys call to close stdout
+        sys rax
+    
+        ; load the sys call function id for exit
+        lod rax exit
+        lod r1 exit_code  ; the exit code
+        ; trigger exit in C
+        sys rax
+    
+        ; please note that the exit function *doesn't actually* stop the whole
+        ; program with the actual exit() function defined from the <stdlib.h>
+        ; in C, instead it does stop the runtime, perform cleanup, and use the
+        ; given exit code to exit
+
+Please note that the sys call function ids used here in this example are just
+for demonstration, and still does not hold any special meaning. We'll document
+those soon in this specification.
+

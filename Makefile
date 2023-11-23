@@ -26,7 +26,7 @@ $(TARGET): $(OBJ)
 -include $(DEP)
 
 # our sub commands
-.PHONY: clean debug
+.PHONY: clean debug pack
 
 clean:
 	rm -rf out $(TARGET)
@@ -34,3 +34,6 @@ clean:
 debug: CFLAGS += -g -D__DEBUG
 debug: LDFLAGS += -g
 debug: all
+
+pack:
+	tar -czvf release.tar.gz src test Makefile readme.md COPYING
